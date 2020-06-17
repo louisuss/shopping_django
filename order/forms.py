@@ -2,6 +2,7 @@ from django import forms
 from .models import Order
 from product.models import Product
 from user.models import User
+from django.db import transaction
 
 
 class RegisterForm(forms.Form):
@@ -34,12 +35,16 @@ class RegisterForm(forms.Form):
         user = self.request.session.get('user')
 
         if quantity and product and user:
-            order = Order(
-                quantity=quantity,
-                product=Product.objects.get(pk=product),
-                user=User.objects.get(email=user)
-            )
-            order.save()
+            with transaction.atomic():
+                prod = Product.objects.get(pk=product)
+                order = Order(
+                    quantity=quantity,
+                    product=prod,
+                    user=User.objects.get(email=user)
+                )
+                order.save()
+                prod.stock -= quantity
+                prod.save()
         else:
             # 실패하면 메시지를 보여주고 싶은데 어떤 페이지에 보여줄지 모름. 그래서 form_invalid 시 redirect 해야함
             self.product = product
