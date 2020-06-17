@@ -4,7 +4,7 @@ from .models import Order
 
 
 class OrderAdmin(admin.ModelAdmin):
-    display = ('user',)
+    display = ('user', 'product')
 
 
 admin.site.register(Order, OrderAdmin)
