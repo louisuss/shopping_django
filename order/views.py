@@ -5,6 +5,11 @@ from django.utils.decorators import method_decorator
 from user.decorators import login_required
 from .forms import RegisterForm
 from .models import Order
+from user.models import User
+from product.models import Product
+
+from django.db import transaction
+
 # Create your views here.
 
 
@@ -14,8 +19,21 @@ class OrderCreate(FormView):
     form_class = RegisterForm
     success_url = '/product/'
 
+    def form_valid(self, form):
+        with transaction.atomic():
+            prod = Product.objects.get(pk=form.data.get('product'))
+            order = Order(
+                quantity=form.data.get('quantity'),
+                product=prod,
+                user=User.objects.get(email=self.request.session.get('user'))
+            )
+            order.save()
+            prod.stock -= int(form.data.get('quantity'))
+            prod.save()
+        return super().form_valid(form)
+
     def form_invalid(self, form):
-        return redirect('/product/' + str(form.product))
+        return redirect('/product/' + str(form.data.get('product')))
 
     # 이 FormView 에서도 request 를 받은것을 입력해줘야됨
     def get_form_kwargs(self, **kwargs):
