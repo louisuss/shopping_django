@@ -20,7 +20,7 @@ class RegisterForm(forms.Form):
     )
     product = forms.IntegerField(
         error_messages={
-            'required': '상품설명을 입력해주세요.'
+            'required': '상품명을 입력해주세요.'
         },
         label='상품', widget=forms.HiddenInput
     )
