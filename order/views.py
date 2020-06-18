@@ -1,11 +1,14 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import FormView
 from django.views.generic import ListView
+from django.utils.decorators import method_decorator
+from user.decorators import login_required
 from .forms import RegisterForm
 from .models import Order
 # Create your views here.
 
 
+@method_decorator(login_required, name='dispatch')
 class OrderCreate(FormView):
     template_name = 'register_product.html'
     form_class = RegisterForm
@@ -25,6 +28,7 @@ class OrderCreate(FormView):
         return kw
 
 
+@method_decorator(login_required, name='dispatch')
 class OrderList(ListView):
     # 다른사람이 주문한 정보도 볼수 있게 됨. 때문에 직접 queryset을 만듬. -> 세션이 필요. 사용자 정보가 필요하기 때문
     # model = Order
@@ -35,3 +39,7 @@ class OrderList(ListView):
         queryset = Order.objects.filter(
             user__email=self.request.session.get('user'))
         return queryset
+
+    # method_decorator를 사용안할경우 다음과 같은 함수를 호출해줘야함
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super().dispatch(request, *args, **kwargs)
